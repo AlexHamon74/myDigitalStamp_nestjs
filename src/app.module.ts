@@ -9,6 +9,8 @@ import { User } from 'src/users/users.entity';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtGuard } from './auth/guards/jwt.guard';
+import { File } from './files/files.entity';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -24,13 +26,14 @@ import { JwtGuard } from './auth/guards/jwt.guard';
         username: process.env.DB_USERNAME,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_DATABASE,
-        entities: [User],
+        entities: [User, File],
         migrations: ['dist/migrations/*.js'],
         dataSource: AppDataSource,
       }),
     }),
     UsersModule,
     AuthModule,
+    FilesModule,
   ],
   controllers: [AppController],
   providers: [
