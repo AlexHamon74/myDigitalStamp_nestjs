@@ -20,4 +20,7 @@ export class File {
 
     @ManyToOne(() => User, (user) => user.files)
     user: User;
+
+    @Column({ default: 0 })
+    verificationCount: number;
 }

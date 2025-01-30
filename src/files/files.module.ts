@@ -7,6 +7,5 @@ import { UsersModule } from '../users/users.module';
 @Module({
     imports: [TypeOrmModule.forFeature([File]), UsersModule],
     controllers: [FilesController],
-    // providers: [UsersService], 
 })
 export class FilesModule {}
