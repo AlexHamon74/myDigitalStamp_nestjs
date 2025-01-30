@@ -1,4 +1,4 @@
-import { Controller, Post, UploadedFile, UseInterceptors, Get, Res, Request, UseGuards, BadRequestException } from "@nestjs/common";
+import { Controller, Post, UploadedFile, UseInterceptors, Get, Res, Request, UseGuards, BadRequestException, Param } from "@nestjs/common";
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -11,6 +11,7 @@ import * as fs from 'fs';
 import { createReadStream } from 'fs';
 import { Response } from 'express';
 import { PNG } from 'pngjs';
+import { Public } from "src/auth/decorators/public.decorator";
 
 @Controller('files')
 export class FilesController {
@@ -34,10 +35,9 @@ export class FilesController {
         return files.map(file => ({
             firtname: file.user.firstName,
             lastname: file.user.lastName,
+            email: file.user.email,
             filename: file.filename,
-            path: file.path,
-            mimetype: file.mimetype,
-            size: file.size,
+            verificationCount: file.verificationCount,
         }));
     }
 
@@ -108,7 +108,7 @@ export class FilesController {
     }
 
     // Route pour révéler le message caché dans l'image si elle est modifiée
-    @UseGuards(AuthGuard('jwt'))
+    @Public()
     @Post('reveal')
     @UseInterceptors(FileInterceptor('file', {
         storage: diskStorage({
@@ -121,10 +121,6 @@ export class FilesController {
         }),
     }))
     async uploadModifiedFile(@UploadedFile() file, @Request() req, @Res() res: Response) {
-        if (!req.user) {
-            throw new BadRequestException("User non connecté");
-        }
-
         // Lire l'image modifiée
         const modifiedImage = fs.readFileSync(file.path);
 
@@ -139,12 +135,10 @@ export class FilesController {
         // Vérifier si le message caché est un ID valide
         const userId = parseInt(hiddenMessage, 10);
         if (isNaN(userId)) {
-            res.json({ message: "Cette image n'a pas été modifiée" });
+            throw new BadRequestException("Pas de propriétaire connu de l'image");
         } else {
+            // Récupérer les informations de l'utilisateur
             const user = await this.usersService.findOneById(userId.toString() as `${string}-${string}-${string}-${string}-${string}`);
-            if (!user) {
-                throw new BadRequestException("Utilisateur non trouvé");
-            }
 
             // Augmenter le compteur de vérification
             const fileRecord = await this.fileRepository.findOne({ where: { path: file.path } });
@@ -156,14 +150,31 @@ export class FilesController {
             res.json({
                 firstName: user.firstName,
                 lastName: user.lastName,
+                email: user.email,
             });
         }
     }
 
-    
-    // -----------------------------------------
-    // FONCTIONS UTILISES POUR LA STEGANOGRAPHIE
-    // -----------------------------------------
+    // Route pour télécharger une image modifiée par son nom de fichier
+    @UseGuards(AuthGuard('jwt'))
+    @Get('download/:filename')
+    async downloadModifiedImage(@Param('filename') filename: string, @Res() res: Response) {
+        const filePath = `src/uploads/modified_${filename}`;
+        if (!fs.existsSync(filePath)) {
+            throw new BadRequestException("Le fichier n'existe pas");
+        }
+
+        const fileStream = createReadStream(filePath);
+        res.set({
+            'Content-Type': 'image/png',
+            'Content-Disposition': `attachment; filename="modified_${filename}"`,
+        });
+        fileStream.pipe(res);
+    }
+
+    // ------------------------------------------
+    // FONCTIONS UTILISEES POUR LA STEGANOGRAPHIE
+    // ------------------------------------------
     private async hideMessageInImage(inputPath: string, outputPath: string, message: string) {
         const png = PNG.sync.read(fs.readFileSync(inputPath));
         const messageBits = this.stringToBits(message);
