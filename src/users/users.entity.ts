@@ -1,5 +1,6 @@
 import { UUID } from 'crypto';
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { File } from '../files/files.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
 @Entity({ name: 'user' })
 export class User {
@@ -17,4 +18,7 @@ export class User {
 
   @Column()
   lastName: string;
+
+  @OneToMany(() => File, (file) => file.user)
+  files: File[];
 }
