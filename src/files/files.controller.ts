@@ -23,6 +23,25 @@ export class FilesController {
     ) {}
 
     @UseGuards(AuthGuard('jwt'))
+    @Get('user-images')
+    async getUserImages(@Request() req) {
+        if (!req.user) {
+            throw new BadRequestException('User non connecté');
+        }
+        const user = await this.usersService.findOneById(req.user.id);
+        const files = await this.fileRepository.find({ where: { user: user }, relations: ['user'] });
+
+        return files.map(file => ({
+            firtname: file.user.firstName,
+            lastname: file.user.lastName,
+            filename: file.filename,
+            path: file.path,
+            mimetype: file.mimetype,
+            size: file.size,
+        }));
+    }
+
+    @UseGuards(AuthGuard('jwt'))
     // @Public()
     @Post('upload')
     @UseInterceptors(FileInterceptor('file', {
