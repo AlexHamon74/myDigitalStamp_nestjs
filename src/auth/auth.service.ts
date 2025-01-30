@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { User } from '../users/users.entity';
+import { User, UserRole } from '../users/users.entity';
 import { AccessToken } from './types/AccessToken';
 import { UsersService } from '../users/users.service';
 import { RegisterRequestDto } from './dtos/register-request.dto';
@@ -38,7 +38,8 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(user.password, 10);
     const newUser: User = {
       ...user, password: hashedPassword,
-      files: []
+      files: [],
+      role: UserRole.USER
     };
     await this.usersService.create(newUser);
     return this.login(newUser);

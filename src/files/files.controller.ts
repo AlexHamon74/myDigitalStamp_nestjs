@@ -156,7 +156,7 @@ export class FilesController {
     }
 
     // Route pour télécharger une image modifiée par son nom de fichier
-    @UseGuards(AuthGuard('jwt'))
+    @Public()
     @Get('download/:filename')
     async downloadModifiedImage(@Param('filename') filename: string, @Res() res: Response) {
         const filePath = `src/uploads/modified_${filename}`;

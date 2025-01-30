@@ -2,6 +2,11 @@ import { UUID } from 'crypto';
 import { File } from '../files/files.entity';
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 
+export enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin',
+}
+
 @Entity({ name: 'user' })
 export class User {
   @PrimaryGeneratedColumn()
@@ -19,6 +24,13 @@ export class User {
   @Column()
   lastName: string;
 
-  @OneToMany(() => File, (file) => file.user)
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.USER,
+  })
+  role: UserRole;
+
+  @OneToMany(() => File, (file) => file.user, { onDelete: 'CASCADE' })
   files: File[];
 }

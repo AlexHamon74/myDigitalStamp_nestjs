@@ -18,7 +18,7 @@ export class File {
     @Column()
     size: number;
 
-    @ManyToOne(() => User, (user) => user.files)
+    @ManyToOne(() => User, (user) => user.files, { onDelete: 'CASCADE' })
     user: User;
 
     @Column({ default: 0 })
