@@ -107,7 +107,7 @@ export class FilesController {
         modifiedImageStream.pipe(res);
     }
 
-    // Route pour révéler le message caché dans l'image si elle est modifiée
+    // Route pour révéler les infos de l'utilisateur à qui appartient l'image si elle est modifiée
     @Public()
     @Post('reveal')
     @UseInterceptors(FileInterceptor('file', {
