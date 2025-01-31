@@ -48,6 +48,7 @@ Ce projet est une API crée en NestJS qui permet la gestion des utilisateurs et 
 - `DELETE /users/:id` : Suppression d'un utilisateur.
 
 ## Conclusion
-Dès le début du projet j'ai oublié de créer la table certificats.
-J'ai donc relier les images directement aux users.
-Les routes /users ne sont protégées par un user qui à un rôle d'administrateur
+Dès le début du projet j'ai oublié de créer la table certificats.  
+Il y a donc une relation direct entre les images et les users.  
+Les routes /users ne sont protégées par un user qui à un rôle d'administrateur.  
+Je pourrais nettement améliorer mon code, notamment la gestion de la signature de l'image.
